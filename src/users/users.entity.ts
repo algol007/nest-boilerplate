@@ -14,6 +14,9 @@ export class User {
   @Column()
   role: string;
 
+  @Column()
+  isVerified: boolean;
+
   @Column({ nullable: true })
   otp: string;
 

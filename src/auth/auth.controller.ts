@@ -5,6 +5,8 @@ import {
   Patch,
   UseGuards,
   Request,
+  Get,
+  Query,
 } from '@nestjs/common';
 import { AuthService } from './auth.service';
 import { LoginDto } from './dto/login.dto';
@@ -17,11 +19,15 @@ import {
   ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { UsersService } from 'src/users/users.service';
 
 @ApiTags('auth') // Grouping routes under 'auth'
 @Controller('auth')
 export class AuthController {
-  constructor(private authService: AuthService) {}
+  constructor(
+    private authService: AuthService,
+    private userService: UsersService,
+  ) {}
 
   @Post('login')
   @ApiOperation({ summary: 'User login' })
@@ -56,5 +62,10 @@ export class AuthController {
   ) {
     const userId = req.user.id;
     return this.authService.changePassword(userId, changePasswordDto);
+  }
+
+  @Get('verify-email')
+  async verifyEmail(@Query('token') token: string) {
+    return this.userService.verifyEmail(token);
   }
 }

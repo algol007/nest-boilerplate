@@ -4,12 +4,15 @@ import * as bcrypt from 'bcryptjs';
 import { UsersService } from '../users/users.service';
 import { ChangePasswordDto } from './dto';
 import { UserRole } from 'src/users/roles.enum';
+import { v4 as uuidv4 } from 'uuid';
+import { EmailService } from 'src/email/email.service';
 
 @Injectable()
 export class AuthService {
   constructor(
     private usersService: UsersService,
     private jwtService: JwtService,
+    private emailService: EmailService,
   ) {}
 
   async validateUser(email: string, pass: string): Promise<any> {
@@ -28,12 +31,20 @@ export class AuthService {
   }
 
   async register(email: string, password: string, role: UserRole) {
+    const verificationToken = uuidv4();
     const hashedPassword = await bcrypt.hash(password, 10);
-    return this.usersService.createUser({
+
+    const user = this.usersService.createUser({
       email,
       password: hashedPassword,
       role,
+      isVerified: false,
+      otp: verificationToken,
     });
+
+    await this.emailService.sendVerificationEmail(email, verificationToken);
+
+    return user;
   }
 
   // Handle password change

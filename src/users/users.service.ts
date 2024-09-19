@@ -15,6 +15,7 @@ export class UsersService {
   // Create a new user
   async createUser(userData: Partial<User>): Promise<User> {
     const newUser = this.usersRepository.create(userData);
+
     return this.usersRepository.save(newUser);
   }
 
@@ -49,5 +50,19 @@ export class UsersService {
 
   async findOneById(userId: number): Promise<User> {
     return this.usersRepository.findOne({ where: { id: userId } });
+  }
+
+  async verifyEmail(token: string) {
+    const user = await this.usersRepository.findOne({ where: { otp: token } });
+
+    if (!user) {
+      throw new Error('Invalid token');
+    }
+
+    user.isVerified = true;
+    user.otp = null;
+    await this.usersRepository.save(user);
+
+    return user;
   }
 }
